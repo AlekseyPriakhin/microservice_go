@@ -55,6 +55,7 @@ func InitHandlers(r chi.Router) {
 				return
 			}
 
+			render.Status(r, http.StatusCreated)
 			render.JSON(w, r, res)
 		})
 	})

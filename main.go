@@ -16,7 +16,7 @@ func main() {
 
 	handlers.InitHandlers(r)
 
-	err := http.ListenAndServe(":5556", r)
+	err := http.ListenAndServe(":5555", r)
 
 	if err != nil {
 		panic(err)
