@@ -21,7 +21,7 @@ func renderError(w http.ResponseWriter, r *http.Request, err string, code int) {
 func InitHandlers(r chi.Router) {
 	r.Route("/course", func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			render.JSON(w, r, repository.GetStages())
+			render.JSON(w, r, repository.GetCourse())
 		})
 		r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 
@@ -31,13 +31,31 @@ func InitHandlers(r chi.Router) {
 				return
 			}
 
-			item, err := repository.FindStage(id)
+			item, err := repository.FindCourse(id)
 			if err != nil {
 				renderError(w, r, err.Error(), http.StatusNotFound)
 				return
 			}
 
 			render.JSON(w, r, item)
+		})
+
+		r.Post("/", func(w http.ResponseWriter, r *http.Request) {
+			req := repository.CourseReqDto{}
+			err := render.DecodeJSON(r.Body, &req)
+			if err != nil {
+				renderError(w, r, "bad request", http.StatusBadRequest)
+				return
+			}
+
+			res, addErr := repository.AddCourse(req)
+
+			if addErr != nil {
+				renderError(w, r, addErr.Error(), http.StatusBadRequest)
+				return
+			}
+
+			render.JSON(w, r, res)
 		})
 	})
 }
