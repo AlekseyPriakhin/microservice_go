@@ -37,7 +37,26 @@ func MapToCourseStatus(s string) (int, error) {
 }
 
 type Course struct {
-	Id     int    `json:"id"`
-	Title  string `json:"title"`
-	Status Status `json:"status"`
+	Id     int     `json:"id"`
+	Title  string  `json:"title"`
+	Status Status  `json:"status"`
+	Stages []Stage `json:"stages"`
+}
+
+func ValidateStages(s []Stage) bool {
+	isValid := false
+
+	if len(s) == 0 {
+		return isValid
+	}
+
+	for i := 0; i < len(s); i++ {
+		if s[i].Type == Test {
+			isValid = true
+		} else {
+			isValid = false
+		}
+	}
+
+	return isValid
 }

@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: app
+    ports:
+      - "5555:5555"
+    build:
+      context: ./
+      dockerfile: Dockerfile
