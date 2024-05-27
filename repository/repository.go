@@ -143,9 +143,9 @@ func createStage(s StageReqDto) types.Stage {
 
 	status, _ := types.MapToStageType(s.Type)
 
-	courseIndex++
+	stageIndex++
 	return types.Stage{
-		Id:    courseIndex,
+		Id:    stageIndex,
 		Title: s.Title,
 		Type:  types.StageType(status),
 		Order: s.Order,
