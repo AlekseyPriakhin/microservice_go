@@ -1,0 +1,45 @@
+@Host = http://localhost:5555
+
+GET {{Host}}/course
+Accept: application/json
+
+
+###
+
+POST {{Host}}/course
+Accept: application/json
+Content-Type: application/json
+
+{
+    "title": "Course 1",
+    "status": "Active",
+    "stages": [
+      {
+        "title": "Stage 1",
+        "type": "Document",
+        "order": 1,
+        "desc": "First stage"
+      },
+      {
+        "title": "Stage 2",
+        "type": "Presentation",
+        "order": 2,
+        "desc": "Second stage"
+      },
+      {
+        "id": 3,
+        "title": "Stage 3",
+        "type": "Video",
+        "order": 3,
+        "desc": "Third stage"
+      },
+      {
+        "title": "Stage 4",
+        "type": "Test",
+        "order": 4,
+        "desc": "Fourth stage"
+      }
+    ]
+  }
+
+###
