@@ -3,6 +3,10 @@
 GET {{Host}}/course
 Accept: application/json
 
+###
+@Id = 1
+GET  {{Host}}/course/{{Id}}
+Accept: application/json
 
 ###
 
