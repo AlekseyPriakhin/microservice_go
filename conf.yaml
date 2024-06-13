@@ -1,0 +1,7 @@
+- api: apps/v1
+  name: app
+  spec: 
+    - container: 
+        - name: cont
+        - image: app:v5
+        - port: 1241
