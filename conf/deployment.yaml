@@ -1,0 +1,20 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-api
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: course-api
+  template:
+    metadata:
+      labels:
+        app: course-api
+    spec:
+      containers:
+        - image: app:v1.05
+          name: course-api
+          ports:
+            - containerPort: 5000
