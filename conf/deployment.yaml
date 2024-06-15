@@ -14,7 +14,7 @@ spec:
         app: course-api
     spec:
       containers:
-        - image: app:v1.05
+        - image: app:v1.06
           name: course-api
           ports:
             - containerPort: 5000
