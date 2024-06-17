@@ -5,23 +5,29 @@
 build:
   stage: build
   script:
-    - cd /home/vagrant/app
     - docker build -t app:${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA} .
     - echo build completed
   rules:
     - if: $CI_COMMIT_TAG != null
 
-deploy:
+commit_new_version:
   stage: deploy
+  dependencies:
+    - build
   script:
-    - cd /home/vagrant/courses-config
+    - cd $CONFIG_DIR
+    - git pull
     - |
-      sed -i `s/image: app:.*/image: app:'"${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"'/g` deployment.yaml
+      sed -i 's/image: app:.*/image: app:'"${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"'/g' deployment.yaml
     - git commit -a -m "Update image to ${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
     - git push
     - echo complete push
+  when: manual
+
+load_image:
+  stage: deploy
+  needs:
+    - job: commit_new_version
+  script:
     - kind load docker-image app:${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}
     - echo load image to cluster
-  rules:
-    - if: $CI_COMMIT_TAG != null
-    - when: manual
