@@ -1,4 +1,4 @@
-FROM golang:alpine AS builder
+FROM golang:1.22 AS builder
 
 WORKDIR /build
 
@@ -6,9 +6,10 @@ ADD go.mod .
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o src
+RUN go mod tidy
+RUN go build -o src
 
-FROM scratch
+FROM golang:1.22
 
 WORKDIR /src
 

@@ -46,6 +46,7 @@ func InitHandlers(r chi.Router, p *kafka.Producer) {
 
 			topic := "course"
 			message, _ := json.Marshal(item)
+			println("trying produce: ", string(message))
 			err = p.Produce(&kafka.Message{
 				TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 				Value:          []byte(message),

@@ -9,13 +9,12 @@ import (
 )
 
 func InitProducerWithAppConfig(cfg configuration.AppConfiguration) *kafka.Producer {
-
-	print(cfg.BrokerServers)
+	fmt.Println("init producer with app config")
+	println(cfg.BrokerServers)
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers":        cfg.BrokerServers,
-		"client.id":                "producer",
-		"allow.auto.create.topics": true,
-		"acks":                     "all"})
+		"bootstrap.servers": cfg.BrokerServers,
+		"client.id":         "producer",
+		"acks":              "all"})
 
 	if err != nil {
 		fmt.Printf("Failed to create producer: %s\n", err)
@@ -25,6 +24,7 @@ func InitProducerWithAppConfig(cfg configuration.AppConfiguration) *kafka.Produc
 }
 
 func InitProducerWithProducerConfig(cfg kafka.ConfigMap) *kafka.Producer {
+	fmt.Println("init producer with config")
 	p, err := kafka.NewProducer(&cfg)
 	if err != nil {
 		fmt.Printf("Failed to create producer: %s\n", err)

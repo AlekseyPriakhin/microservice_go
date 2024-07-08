@@ -1,4 +1,4 @@
-FROM golang AS builder
+FROM golang:1.22 AS builder
 
 WORKDIR /build
 
@@ -7,9 +7,10 @@ ADD go.mod .
 COPY . .
 
 RUN go mod tidy
-RUN CGO_ENABLED=0 GOOS=linux go build -o src
+#RUN go build -o src
+RUN go build -o src
 
-FROM scratch
+FROM golang:1.22
 
 WORKDIR /src
 
