@@ -8,12 +8,20 @@ services:
     build:
       context: ./Producer
       dockerfile: Dockerfile
+    environment:
+      - KAFKA_BROKER=broker:9092,localhost:19092
+    depends_on:
+      - broker
 
   consumer:
     container_name: go_consumer
     build:
       context: ./Consumer
       dockerfile: Dockerfile
+    environment:
+      - KAFKA_BROKER=broker:9092,localhost:19092
+    depends_on:
+      - broker
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.2.1

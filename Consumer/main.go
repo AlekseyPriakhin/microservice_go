@@ -8,8 +8,13 @@ import (
 )
 
 func main() {
+	kafkaBrokers := os.Getenv("KAFKA_BROKER")
+	if kafkaBrokers == "" {
+		panic("set KAFKA_BROKERS env variable")
+	}
+
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": "broker:9092,localhost:19092",
+		"bootstrap.servers": kafkaBrokers,
 		"group.id":          "foo",
 		"auto.offset.reset": "smallest"})
 

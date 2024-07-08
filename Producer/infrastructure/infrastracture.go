@@ -9,10 +9,20 @@ import (
 )
 
 func InitProducerWithAppConfig(cfg configuration.AppConfiguration) *kafka.Producer {
+
+	kafkaBrokers := os.Getenv("KAFKA_BROKER")
+
+	if kafkaBrokers == "" {
+		kafkaBrokers = cfg.BrokerServers
+	}
+
+	if kafkaBrokers == "" {
+		panic("set KAFKA_BROKERS env variable or app config")
+	}
+
 	fmt.Println("init producer with app config")
-	println(cfg.BrokerServers)
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": cfg.BrokerServers,
+		"bootstrap.servers": kafkaBrokers,
 		"client.id":         "producer",
 		"acks":              "all"})
 
