@@ -6,13 +6,6 @@ import (
 	"microservice_go/utils"
 )
 
-type CourseResDto struct {
-	Id     int           `json:"id"`
-	Title  string        `json:"title"`
-	Status string        `json:"status"`
-	Stages []StageResDto `json:"stages"`
-}
-
 type CourseReqDto struct {
 	Title  string        `json:"title"`
 	Status string        `json:"status"`
@@ -26,13 +19,10 @@ type StageReqDto struct {
 	Type  string `json:"type"`
 }
 
-type StageResDto struct {
-	Id    int    `json:"id"`
-	Title string `json:"title"`
-	Type  string `json:"type"`
-	Order int    `json:"order"`
-	Desc  string `json:"desc"`
-}
+var Users = []string{
+	"User 1",
+	"User 2",
+	"User 3"}
 
 var courses = []types.Course{}
 var courseIndex = 0
@@ -54,30 +44,11 @@ func init() {
 	}
 }
 
-func GetCourse() []CourseResDto {
-	res := utils.Map(courses, func(c types.Course) CourseResDto {
-		return CourseResDto{
-			Id:     c.Id,
-			Title:  c.Title,
-			Status: c.Status.String(),
-			Stages: utils.Map(c.Stages, func(s types.Stage) StageResDto {
-
-				return StageResDto{
-					Id:    s.Id,
-					Title: s.Title,
-					Type:  s.Type.String(),
-					Order: s.Order,
-					Desc:  s.Desc,
-				}
-			}),
-		}
-	})
-
-	return res
+func GetCourse() []types.Course {
+	return courses
 }
 
-func FindCourse(id int) (CourseResDto, error) {
-	item := CourseResDto{}
+func FindCourse(id int) (types.Course, error) {
 	idx := func() int {
 		for i := 0; i < len(courses); i++ {
 			if courses[i].Id == id {
@@ -88,27 +59,13 @@ func FindCourse(id int) (CourseResDto, error) {
 	}()
 
 	if idx == -1 {
-		return item, fmt.Errorf("курс с таким id %d не найден", id)
+		return types.Course{}, fmt.Errorf("курс с таким id %d не найден", id)
 	}
 
-	item = CourseResDto{
-		Id:     courses[idx].Id,
-		Title:  courses[idx].Title,
-		Status: courses[idx].Status.String(),
-		Stages: utils.Map(courses[idx].Stages, func(s types.Stage) StageResDto {
-			return StageResDto{
-				Id:    s.Id,
-				Title: s.Title,
-				Type:  s.Type.String(),
-				Order: s.Order,
-				Desc:  s.Desc,
-			}
-		}),
-	}
-	return item, nil
+	return courses[idx], nil
 }
 
-func AddCourse(c CourseReqDto) (CourseResDto, error) {
+func AddCourse(c CourseReqDto) (types.Course, error) {
 
 	courseIndex++
 
@@ -119,7 +76,7 @@ func AddCourse(c CourseReqDto) (CourseResDto, error) {
 	status, err := types.MapToCourseStatus(c.Status)
 
 	if err != nil {
-		return CourseResDto{}, err
+		return types.Course{}, err
 	}
 
 	if !types.ValidateStages(stages) {

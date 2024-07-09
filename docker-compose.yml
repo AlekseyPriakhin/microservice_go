@@ -8,16 +8,19 @@ services:
     build:
       context: ./Producer
       dockerfile: Dockerfile
-    environment:
-      - KAFKA_BROKER=broker:9092,localhost:19092
+    volumes:
+      - ./Producer/configuration.json:/src/configuration.json
     depends_on:
       - broker
 
   consumer:
     container_name: go_consumer
+    restart: on-failure
     build:
       context: ./Consumer
       dockerfile: Dockerfile
+    volumes:
+      - ./Consumer/configuration.json:/src/configuration.json
     environment:
       - KAFKA_BROKER=broker:9092,localhost:19092
     depends_on:

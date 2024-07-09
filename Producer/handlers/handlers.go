@@ -2,22 +2,20 @@ package handlers
 
 import (
 	"encoding/json"
+	"microservice_go/application"
 	"microservice_go/repository"
+	"microservice_go/utils/mapper"
 	"net/http"
 	"strconv"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
 )
 
 type Error struct {
 	Message string `json:"message"`
-}
-
-type BrokerMessage struct {
-	Id    int    `json:"id"`
-	Title string `json:"title"`
 }
 
 func renderError(w http.ResponseWriter, r *http.Request, err string, code int) {
@@ -28,7 +26,7 @@ func renderError(w http.ResponseWriter, r *http.Request, err string, code int) {
 func InitHandlers(r chi.Router, p *kafka.Producer) {
 	r.Route("/course", func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			render.JSON(w, r, repository.GetCourse())
+			render.JSON(w, r, mapper.ToCourseResDtoList(repository.GetCourse()))
 		})
 		r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 
@@ -44,11 +42,16 @@ func InitHandlers(r chi.Router, p *kafka.Producer) {
 				return
 			}
 
-			topic := "course"
-			message, _ := json.Marshal(item)
-			println("trying produce: ", string(message))
+			topic := "status_req"
+			message, _ := json.Marshal(application.StatusChangeReqBrokerMsg{
+				Course: item,
+				ReqId:  uuid.New().String(),
+			})
+
+			// Generate status process req UUID and send it
+
 			err = p.Produce(&kafka.Message{
-				TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+				TopicPartition: kafka.TopicPartition{Topic: &topic},
 				Value:          []byte(message),
 			}, nil)
 
@@ -57,7 +60,7 @@ func InitHandlers(r chi.Router, p *kafka.Producer) {
 				return
 			}
 
-			render.JSON(w, r, item)
+			render.JSON(w, r, mapper.ToCourseResDto(item))
 		})
 
 		r.Post("/", func(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +79,7 @@ func InitHandlers(r chi.Router, p *kafka.Producer) {
 			}
 
 			render.Status(r, http.StatusCreated)
-			render.JSON(w, r, res)
+			render.JSON(w, r, mapper.ToCourseResDto(res))
 		})
 	})
 }

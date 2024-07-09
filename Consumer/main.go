@@ -1,40 +1,48 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"consumer/broker/consumer"
+	"consumer/broker/producer"
+	statushandler "consumer/statusHandler"
+	"encoding/json"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 func main() {
-	kafkaBrokers := os.Getenv("KAFKA_BROKER")
-	if kafkaBrokers == "" {
-		panic("set KAFKA_BROKERS env variable")
-	}
+	brokerCmr := consumer.Consumer
 
-	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": kafkaBrokers,
-		"group.id":          "foo",
-		"auto.offset.reset": "smallest"})
-
-	if err != nil {
-		panic(err)
-	}
-
-	consumer.SubscribeTopics([]string{"course"}, nil)
+	brokerCmr.SubscribeTopics([]string{"status_req"}, nil)
 	run := true
 	for run {
-		ev := consumer.Poll(100)
+
+		ev := brokerCmr.Poll(100)
 		switch e := ev.(type) {
 		case *kafka.Message:
-			fmt.Printf("Message on %s: %s\n", e.TopicPartition, string(e.Value))
+			consumer.HandleMessage(e)
 		case kafka.Error:
-			fmt.Fprintf(os.Stderr, "%% Error: %v\n", e)
+			consumer.HandleError(&e, ev)
 			run = false
-		default:
 		}
+
+		time.Sleep(2 * time.Second)
+		statushandler.QueueHandler()
+
+		//Обработка очереди обработанных сообщений
+		if !statushandler.ResQueue.IsEmpty() {
+			data := statushandler.ResQueue.Dequeue()
+
+			topic := "status_res"
+			msg, _ := json.Marshal(data)
+
+			producer.Producer.Produce(&kafka.Message{
+				TopicPartition: kafka.TopicPartition{Topic: &topic},
+				Value:          []byte(msg),
+			}, nil)
+		}
+
 	}
 
-	consumer.Close()
+	brokerCmr.Close()
 }

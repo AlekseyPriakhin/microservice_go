@@ -3,7 +3,7 @@ package main
 import (
 	"microservice_go/configuration"
 	"microservice_go/handlers"
-	"microservice_go/infrastructure"
+	"microservice_go/infrastructure/broker/producer"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -16,7 +16,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	p := infrastructure.InitProducerWithAppConfig(configuration.Configuration)
+	p := producer.Create(configuration.Configuration)
 
 	handlers.InitHandlers(r, p)
 

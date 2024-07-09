@@ -1,4 +1,4 @@
-package infrastructure
+package producer
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-func InitProducerWithAppConfig(cfg configuration.AppConfiguration) *kafka.Producer {
+func Create(cfg configuration.AppConfiguration) *kafka.Producer {
 
 	kafkaBrokers := os.Getenv("KAFKA_BROKER")
 
@@ -33,7 +33,7 @@ func InitProducerWithAppConfig(cfg configuration.AppConfiguration) *kafka.Produc
 	return p
 }
 
-func InitProducerWithProducerConfig(cfg kafka.ConfigMap) *kafka.Producer {
+/* func InitProducerWithProducerConfig(cfg kafka.ConfigMap) *kafka.Producer {
 	fmt.Println("init producer with config")
 	p, err := kafka.NewProducer(&cfg)
 	if err != nil {
@@ -41,4 +41,4 @@ func InitProducerWithProducerConfig(cfg kafka.ConfigMap) *kafka.Producer {
 		os.Exit(1)
 	}
 	return p
-}
+} */
