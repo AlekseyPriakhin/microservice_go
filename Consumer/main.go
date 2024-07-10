@@ -14,6 +14,8 @@ func main() {
 	brokerCmr := consumer.Consumer
 
 	brokerCmr.SubscribeTopics([]string{"status_req"}, nil)
+
+	go statushandler.QueueHandler()
 	run := true
 	for run {
 
@@ -27,7 +29,6 @@ func main() {
 		}
 
 		time.Sleep(2 * time.Second)
-		statushandler.QueueHandler()
 
 		//Обработка очереди обработанных сообщений
 		if !statushandler.ResQueue.IsEmpty() {

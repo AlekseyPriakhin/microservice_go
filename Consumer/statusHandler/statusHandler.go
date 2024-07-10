@@ -26,18 +26,23 @@ func ReqHandler(msg StatusChangeReqBrokerMsg) {
 }
 
 func QueueHandler() {
-	if ReqQueue.IsEmpty() {
-		time.Sleep(5 * time.Second)
-		return
+	run := true
+	for run {
+
+		if ReqQueue.IsEmpty() {
+			//println("Сообщений нет")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		msg := ReqQueue.Dequeue()
+		println("Извлеченное сообщение: ", msg.ReqId)
+		time.Sleep(2 * time.Second)
+		println("Обрабатываю...")
+		time.Sleep(12 * time.Second)
+
+		res := types.ValidateStages(msg.Course.Stages)
+		println("Обработанное сообщение: ", msg.ReqId)
+		ResQueue.Enqueue(StatusChangeResBrokerMsg{ReqId: msg.ReqId, Course: msg.Course, Result: res})
 	}
-
-	msg := ReqQueue.Dequeue()
-	println("Извлеченное сообщение: ", msg.ReqId)
-	time.Sleep(2 * time.Second)
-	println("Обрабатываю...")
-	time.Sleep(12 * time.Second)
-
-	res := types.ValidateStages(msg.Course.Stages)
-	println("Обработанное сообщение: ", msg.ReqId)
-	ResQueue.Enqueue(StatusChangeResBrokerMsg{ReqId: msg.ReqId, Course: msg.Course, Result: res})
 }
