@@ -2,8 +2,12 @@ package statushandler
 
 import (
 	"consumer/types"
-	"consumer/utils"
+	"encoding/json"
+	"sync"
 	"time"
+
+	"github.com/AlekseyPriakhin/queue"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 type StatusChangeReqBrokerMsg struct {
@@ -17,32 +21,64 @@ type StatusChangeResBrokerMsg struct {
 	Result bool         `json:"result"`
 }
 
-var ReqQueue = utils.CreateQueue[StatusChangeReqBrokerMsg]()
-var ResQueue = utils.CreateQueue[StatusChangeResBrokerMsg]()
+var ReqQueue = queue.CreateQueue[StatusChangeReqBrokerMsg]()
+var ResQueue = queue.CreateQueue[StatusChangeResBrokerMsg]()
+var resQueueMtx = sync.Mutex{}
 
 func ReqHandler(msg StatusChangeReqBrokerMsg) {
 	println("Добавляю в очередь новое сообщение", msg.ReqId)
 	ReqQueue.Enqueue(msg)
 }
 
-func QueueHandler() {
+func ReqQueueHandler() {
 	run := true
+	ch := make(chan struct{}, 2)
 	for run {
 
 		if ReqQueue.IsEmpty() {
-			//println("Сообщений нет")
 			time.Sleep(5 * time.Second)
 			continue
 		}
 
-		msg := ReqQueue.Dequeue()
-		println("Извлеченное сообщение: ", msg.ReqId)
-		time.Sleep(2 * time.Second)
-		println("Обрабатываю...")
-		time.Sleep(12 * time.Second)
-
-		res := types.ValidateStages(msg.Course.Stages)
-		println("Обработанное сообщение: ", msg.ReqId)
-		ResQueue.Enqueue(StatusChangeResBrokerMsg{ReqId: msg.ReqId, Course: msg.Course, Result: res})
+		go handleMsg(ReqQueue.Dequeue(), &resQueueMtx, ch)
 	}
+}
+
+func handleMsg(msg StatusChangeReqBrokerMsg, mutex *sync.Mutex, ch chan struct{}) {
+	ch <- struct{}{}
+
+	time.Sleep(15 * time.Second)
+	res := types.ValidateStages(msg.Course.Stages)
+
+	mutex.Lock()
+	ResQueue.Enqueue(StatusChangeResBrokerMsg{ReqId: msg.ReqId, Course: msg.Course, Result: res})
+	mutex.Unlock()
+	<-ch
+}
+
+func ResQueueHandler(producer *kafka.Producer) {
+	run := true
+	for run {
+		time.Sleep(2 * time.Second)
+		var data StatusChangeResBrokerMsg = StatusChangeResBrokerMsg{}
+
+		resQueueMtx.Lock()
+		if !ResQueue.IsEmpty() {
+			data = ResQueue.Dequeue()
+		}
+		resQueueMtx.Unlock()
+
+		if data.Course.Id == 0 {
+			continue
+		}
+		msg, _ := json.Marshal(data)
+		sendToTopic("status_res", msg, producer)
+	}
+}
+
+func sendToTopic(topic string, msg []byte, producer *kafka.Producer) {
+	producer.Produce(&kafka.Message{
+		TopicPartition: kafka.TopicPartition{Topic: &topic},
+		Value:          []byte(msg),
+	}, nil)
 }

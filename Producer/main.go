@@ -3,6 +3,8 @@ package main
 import (
 	"microservice_go/configuration"
 	"microservice_go/handlers"
+	"microservice_go/infrastructure"
+	"microservice_go/infrastructure/broker/consumer"
 	"microservice_go/infrastructure/broker/producer"
 	"net/http"
 
@@ -17,6 +19,10 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	p := producer.Create(configuration.Configuration)
+	c := consumer.MustCreate(configuration.Configuration)
+
+	c.SubscribeTopics([]string{"status_res"}, nil)
+	go infrastructure.HandleBrokerMsg(c)
 
 	handlers.InitHandlers(r, p)
 

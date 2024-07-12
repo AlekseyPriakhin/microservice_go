@@ -1,6 +1,6 @@
 package utils
 
-type Queue[TItem any] struct {
+/* type Queue[TItem any] struct {
 	items []TItem
 
 	IsEmpty func() bool
@@ -34,3 +34,4 @@ func CreateQueue[TItem any]() Queue[TItem] {
 		Dequeue: dequeue,
 	}
 }
+*/

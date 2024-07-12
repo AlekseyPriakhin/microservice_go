@@ -20,7 +20,6 @@ func Create(cfg configuration.AppConfiguration) *kafka.Producer {
 		panic("set KAFKA_BROKERS env variable or app config")
 	}
 
-	fmt.Println("init producer with app config")
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
 		"bootstrap.servers": kafkaBrokers,
 		"client.id":         "producer",

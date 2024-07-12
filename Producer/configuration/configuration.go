@@ -14,7 +14,6 @@ var Configuration = readConfiguration()
 
 func readConfiguration() AppConfiguration {
 	file, _ := os.Open("configuration.json")
-	print(file)
 	defer file.Close()
 
 	decoder := json.NewDecoder(file)

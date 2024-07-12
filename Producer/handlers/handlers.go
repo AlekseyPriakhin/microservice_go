@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"encoding/json"
+	"math/big"
 	"microservice_go/application"
 	"microservice_go/repository"
 	"microservice_go/utils/mapper"
@@ -24,9 +26,15 @@ func renderError(w http.ResponseWriter, r *http.Request, err string, code int) {
 }
 
 func InitHandlers(r chi.Router, p *kafka.Producer) {
+	m := application.GetRequestMap()
+
 	r.Route("/course", func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			render.JSON(w, r, mapper.ToCourseResDtoList(repository.GetCourse()))
+		})
+
+		r.Get("/request", func(w http.ResponseWriter, r *http.Request) {
+			render.JSON(w, r, m)
 		})
 		r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 
@@ -43,15 +51,19 @@ func InitHandlers(r chi.Router, p *kafka.Producer) {
 			}
 
 			topic := "status_req"
+			guid := uuid.New().String()
 			message, _ := json.Marshal(application.StatusChangeReqBrokerMsg{
 				Course: item,
-				ReqId:  uuid.New().String(),
+				ReqId:  guid,
 			})
 
-			// Generate status process req UUID and send it
+			users := repository.Users
+
+			rand, _ := rand.Int(rand.Reader, big.NewInt(int64(len(users))))
+			application.AddRequestToMap(guid, users[rand.Int64()])
 
 			err = p.Produce(&kafka.Message{
-				TopicPartition: kafka.TopicPartition{Topic: &topic},
+				TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: 0},
 				Value:          []byte(message),
 			}, nil)
 
