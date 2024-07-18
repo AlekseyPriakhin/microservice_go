@@ -11,14 +11,12 @@ import (
 )
 
 func HandleMessage(ev *kafka.Message) {
-	println("handle message")
 
 	switch *ev.TopicPartition.Topic {
 	case "course":
 		courseMsgHandler(extractData[types.Course](ev))
 	case "status_req":
 		{
-			println("handle status_req message")
 			statushandler.ReqHandler(extractData[statushandler.StatusChangeReqBrokerMsg](ev))
 		}
 	}

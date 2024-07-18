@@ -26,7 +26,6 @@ var ResQueue = queue.CreateQueue[StatusChangeResBrokerMsg]()
 var resQueueMtx = sync.Mutex{}
 
 func ReqHandler(msg StatusChangeReqBrokerMsg) {
-	println("Добавляю в очередь новое сообщение", msg.ReqId)
 	ReqQueue.Enqueue(msg)
 }
 
@@ -60,17 +59,15 @@ func ResQueueHandler(producer *kafka.Producer) {
 	run := true
 	for run {
 		time.Sleep(2 * time.Second)
-		var data StatusChangeResBrokerMsg = StatusChangeResBrokerMsg{}
 
-		resQueueMtx.Lock()
-		if !ResQueue.IsEmpty() {
-			data = ResQueue.Dequeue()
-		}
-		resQueueMtx.Unlock()
+		var data StatusChangeResBrokerMsg = StatusChangeResBrokerMsg{}
+		dequeueItem(ResQueue, &resQueueMtx, &data)
 
 		if data.Course.Id == 0 {
 			continue
 		}
+		println("dequeue item", data.ReqId, data.Course.Id)
+
 		msg, _ := json.Marshal(data)
 		sendToTopic("status_res", msg, producer)
 	}
@@ -81,4 +78,12 @@ func sendToTopic(topic string, msg []byte, producer *kafka.Producer) {
 		TopicPartition: kafka.TopicPartition{Topic: &topic},
 		Value:          []byte(msg),
 	}, nil)
+}
+
+func dequeueItem[T any](q queue.Queue[T], mtx *sync.Mutex, d *T) {
+	mtx.Lock()
+	if !ResQueue.IsEmpty() {
+		*d = q.Dequeue()
+	}
+	mtx.Unlock()
 }

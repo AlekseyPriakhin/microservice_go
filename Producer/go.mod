@@ -6,9 +6,7 @@ require (
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/render v1.0.3
+	github.com/google/uuid v1.6.0
 )
 
-require (
-	github.com/ajg/form v1.5.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
-)
+require github.com/ajg/form v1.5.1 // indirect

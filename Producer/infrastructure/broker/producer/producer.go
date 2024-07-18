@@ -8,7 +8,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-func Create(cfg configuration.AppConfiguration) *kafka.Producer {
+func MustCreate(cfg configuration.AppConfiguration) *kafka.Producer {
 
 	kafkaBrokers := os.Getenv("KAFKA_BROKER")
 

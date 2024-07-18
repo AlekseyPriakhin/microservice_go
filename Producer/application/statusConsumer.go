@@ -38,6 +38,5 @@ func StatusCalculatedHandler(msg StatusChangeResBrokerMsg) {
 	if userReqMap[reqId] == "" {
 		return
 	}
-	println("Calculated", reqId)
 	DeleteRequestFromMap(reqId)
 }

@@ -18,7 +18,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	p := producer.Create(configuration.Configuration)
+	p := producer.MustCreate(configuration.Configuration)
 	c := consumer.MustCreate(configuration.Configuration)
 
 	c.SubscribeTopics([]string{"status_res"}, nil)
